@@ -1,0 +1,26 @@
+{% extends "accounts/base.html" %}
+
+{% block title %} Email Confirmé | Succès {% endblock title %}
+
+{% block content %}
+<div class="login100-form validate-form">
+    <span class="login100-form-title" style="padding-bottom: 26px;">
+        Email Confirmé avec Succès!
+    </span>
+    
+    <div class="text-center" style="padding-bottom: 30px;">
+        <i class="fa fa-check-circle" style="font-size: 80px; color: #57b846;"></i>
+    </div>
+
+    <div class="text-center p-b-40">
+        <p>Votre adresse email a été vérifiée avec succès.</p>
+        <p>Vous pouvez maintenant vous connecter à votre compte.</p>
+    </div>
+
+    <div class="container-login100-form-btn">
+        <a href="{% url 'login' %}" class="login100-form-btn">
+            Se Connecter
+        </a>
+    </div>
+</div>
+{% endblock %}

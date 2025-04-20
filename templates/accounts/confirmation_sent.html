@@ -1,0 +1,25 @@
+{% extends "accounts/base.html" %}
+
+{% block content %}
+<div class="login100-form validate-form">
+    <span class="login100-form-title">
+        Email de confirmation envoyé
+    </span>
+    
+    <div class="text-center p-b-20" style="padding: 0 20px;">
+        <i class="fa fa-envelope" style="font-size: 60px; color: #4CAF50;"></i>
+        <p class="txt1" style="margin-top: 20px;">
+            Nous avons envoyé un email de confirmation à l'adresse que vous avez fournie.
+        </p>
+        <p class="txt1">
+            Veuillez cliquer sur le lien dans cet email pour activer votre compte.
+        </p>
+    </div>
+
+    <div class="text-center p-t-20">
+        <a class="txt2" href="{% url 'login' %}">
+            <i class="fa fa-arrow-left"></i> Retour à la connexion
+        </a>
+    </div>
+</div>
+{% endblock %}

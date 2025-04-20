@@ -1,0 +1,24 @@
+{% extends "accounts/base.html" %}
+
+{% block title %} Email Déjà Confirmé {% endblock title %}
+
+{% block content %}
+<div class="login100-form validate-form">
+    <span class="login100-form-title" style="padding-bottom: 26px;">
+        <i class="fa fa-info-circle" style="color: #2d8ac7; margin-right: 10px;"></i>
+        Email Déjà Confirmé
+    </span>
+    
+    <div class="text-center p-b-40" style="color: #333;">
+        <p style="font-size: 16px;">Votre adresse email a déjà été confirmée.</p>
+        <p style="font-size: 16px;">Vous pouvez vous connecter directement.</p>
+    </div>
+
+    <div class="container-login100-form-btn">
+        <a href="{% url 'login' %}" class="login100-form-btn" style="background: #2d8ac7;">
+            <i class="fa fa-sign-in" style="margin-right: 8px;"></i>
+            Se Connecter
+        </a>
+    </div>
+</div>
+{% endblock %}

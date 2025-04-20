@@ -14,3 +14,10 @@ class EmailOrUsernameBackend(ModelBackend):
                 return user
         except User.DoesNotExist:
             return None
+        
+class EmailConfirmationBackend(ModelBackend):
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        user = super().authenticate(request, username, password, **kwargs)
+        if user and not user.email_confirmed:
+            return None
+        return user

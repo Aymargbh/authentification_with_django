@@ -134,4 +134,7 @@ STATICFILES_DIRS = [
 
 AUTHENTICATION_BACKENDS = [
     'profiles.backends.EmailOrUsernameBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
+
+BASE_URL = 'http://localhost:8000'

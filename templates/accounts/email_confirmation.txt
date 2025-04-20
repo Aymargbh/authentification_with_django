@@ -1,0 +1,12 @@
+Bienvenue {{ user.username }} !
+
+Merci de vous être inscrit sur notre plateforme.
+
+Pour activer votre compte, veuillez cliquer sur le lien ci-dessous :
+
+{{ confirmation_url }}
+
+Si vous n'avez pas créé de compte, vous pouvez ignorer cet email.
+
+Cordialement,  
+L'équipe de notre site
