@@ -17,6 +17,17 @@ import secrets
 
 User = get_user_model()
 
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+
+# Décorateur personnalisé pour vérifier la confirmation email
+def email_confirmation_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and not request.user.email_confirmed:
+            return redirect('account_unconfirmed')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
 class SignUpView(CreateView):
     model = CustomUser
     form_class = CustomUserCreationForm
@@ -190,40 +201,8 @@ class CustomPasswordResetConfirmView(FormView):
         form.save()
         return super().form_valid(form)
 
-class ConfirmEmailView(View):
-    def get(self, request, token):
-        try:
-            user = get_object_or_404(CustomUser, confirmation_token=token)
-            
-            if user.email_confirmed:
-                messages.info(request, "Votre email a déjà été confirmé.")
-                return render(request, 'accounts/email_already_confirmed.html')
-                
-            user.email_confirmed = True
-            user.confirmation_token = ""
-            user.save()
-            
-            # On utilise render au lieu de redirect pour afficher une page dédiée
-            return render(request, 'accounts/email_confirmation_success.html')
-            
-        except Exception as e:
-            return render(request, 'accounts/email_confirmation_invalid.html', 
-                         {'token': token})
-
 class ConfirmationSentView(TemplateView):
     template_name = 'accounts/confirmation_sent.html'
-
-
-class ConfirmEmailView(View):
-    def get(self, request, token):
-        try:
-            user = get_object_or_404(CustomUser, confirmation_token=token)
-            user.email_confirmed = True
-            user.confirmation_token = ""
-            user.save()
-            return render(request, 'accounts/confirmation_success.html')
-        except Exception as e:
-            return render(request, 'accounts/confirmation_invalid.html', {'token': token})
 
 class ResendConfirmationEmailView(View):
     def get(self, request):
@@ -239,7 +218,7 @@ class ResendConfirmationEmailView(View):
             
             # Envoyer l'email
             confirmation_link = request.build_absolute_uri(
-                f'/confirm-email/{token}/'
+                f'/accounts/confirm-email/{token}/'
             )
             send_mail(
                 'Confirmation de votre email',
@@ -255,3 +234,98 @@ class ResendConfirmationEmailView(View):
         except CustomUser.DoesNotExist:
             messages.error(request, "Aucun compte non confirmé trouvé avec cette adresse email.")
             return redirect('resend_confirmation')
+        
+from django.views import View
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.utils import timezone
+from datetime import timedelta
+from .models import CustomUser
+from .utils import generate_confirmation_token, send_confirmation_email
+from django.views import View
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+
+from django.utils import timezone
+
+class ConfirmEmailView(View):
+    def get(self, request, token):
+        try:
+            user = CustomUser.objects.filter(confirmation_token=token).first()
+            
+            if not user:
+                messages.error(request, "Lien de confirmation invalide")
+                return redirect('resend_confirmation')
+                
+            if user.email_confirmed:
+                messages.info(request, "Votre email est déjà confirmé")
+                return redirect('login')
+                
+            if user.is_confirmation_token_expired():
+                messages.error(request, "Lien expiré, veuillez en demander un nouveau")
+                return redirect('resend_confirmation')
+                
+            # Validation réussie
+            user.email_confirmed = True
+            user.confirmation_token = None
+            user.confirmation_token_created_at = None
+            user.is_active = True
+            user.save()
+            
+            messages.success(request, "Email confirmé avec succès!")
+            return redirect('login')
+            
+        except Exception as e:
+            messages.error(request, f"Erreur lors de la confirmation: {str(e)}")
+            return redirect('resend_confirmation')
+
+class ResendConfirmationView(View):
+    def post(self, request):
+        email = request.POST.get('email')
+        try:
+            user = CustomUser.objects.get(email=email)
+            
+            if user.email_confirmed:
+                messages.info(request, "Cet email est déjà confirmé")
+                return redirect('login')
+            
+            user.send_confirmation_email(request)
+            
+            messages.success(request, "Nouveau lien envoyé! Valable 48h.")
+            return redirect('login')
+            
+        except CustomUser.DoesNotExist:
+            messages.error(request, "Aucun compte avec cet email")
+            return redirect('resend_confirmation')
+                
+# Decorateur pour vérifier la confirmation
+def confirmed_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated and not request.user.email_confirmed:
+            messages.warning(request, "Vous devez confirmer votre email")
+            return redirect('resend_confirmation')
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+class ReactivateAccountView(View):
+    def get(self, request, token):
+        try:
+            user = get_object_or_404(CustomUser, confirmation_token=token)
+            
+            if user.email_confirmed:
+                return render(request, 'accounts/email_already_confirmed.html')
+                
+            # Réactiver le compte et envoyer un nouveau lien
+            user.is_active = True
+            user.confirmation_token = generate_confirmation_token()
+            user.confirmation_token_created_at = timezone.now()
+            user.save()
+            
+            send_confirmation_email(user, request)
+            
+            return render(request, 'accounts/reactivation_success.html')
+            
+        except Exception as e:
+            return render(request, 'accounts/activation_invalid.html')

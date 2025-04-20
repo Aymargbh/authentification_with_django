@@ -1,0 +1,31 @@
+{% extends "accounts/base.html" %}
+
+{% block title %} Lien Expiré {% endblock title %}
+
+{% block content %}
+<div class="login100-form validate-form">
+    <span class="login100-form-title" style="padding-bottom: 26px;">
+        <i class="fa fa-clock-o" style="color: #ff5252; margin-right: 10px;"></i>
+        Lien Expiré
+    </span>
+    
+    <div class="text-center p-b-40" style="color: #333;">
+        <p style="font-size: 16px;">Votre lien de confirmation a expiré.</p>
+        <p style="font-size: 16px;">Votre compte a été désactivé pour des raisons de sécurité.</p>
+    </div>
+
+    <div class="container-login100-form-btn">
+        <a href="{% url 'resend_confirmation' %}" class="login100-form-btn" style="background: #ff5252;">
+            <i class="fa fa-refresh" style="margin-right: 8px;"></i>
+            Réactiver mon compte
+        </a>
+    </div>
+
+    <div class="text-center p-t-20">
+        <a class="txt2" href="{% url 'contact' %}">
+            Besoin d'aide ? Contactez-nous
+            <i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "accounts/base.html" %}
+
+{% block title %} Confirmation Email Requise {% endblock title %}
+
+{% block content %}
+<div class="login100-form validate-form">
+    <span class="login100-form-title" style="padding-bottom: 26px;">
+        <i class="fa fa-envelope" style="color: #ff5252; margin-right: 10px;"></i>
+        Confirmation Requise
+    </span>
+    
+    <div class="text-center p-b-40" style="color: #333;">
+        <p style="font-size: 16px;">Vous devez confirmer votre adresse email pour accéder à cette page.</p>
+        <p style="font-size: 16px;">Veuillez vérifier votre boîte mail pour le lien de confirmation.</p>
+    </div>
+
+    <div class="container-login100-form-btn">
+        <a href="{% url 'resend_confirmation' %}" class="login100-form-btn" style="background: #ff5252;">
+            <i class="fa fa-refresh" style="margin-right: 8px;"></i>
+            Renvoyer le lien de confirmation
+        </a>
+    </div>
+
+    <div class="text-center p-t-20">
+        <a class="txt2" href="{% url 'logout' %}">
+            <i class="fa fa-sign-out" style="margin-right: 5px;"></i>
+            Se déconnecter
+        </a>
+    </div>
+</div>
+{% endblock %}

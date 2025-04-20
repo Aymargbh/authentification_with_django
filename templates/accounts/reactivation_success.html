@@ -1,0 +1,24 @@
+{% extends "accounts/base.html" %}
+
+{% block title %} Réactivation Envoyée {% endblock title %}
+
+{% block content %}
+<div class="login100-form validate-form">
+    <span class="login100-form-title" style="padding-bottom: 26px;">
+        <i class="fa fa-envelope-o" style="color: #57b846; margin-right: 10px;"></i>
+        Email de Réactivation Envoyé
+    </span>
+    
+    <div class="text-center p-b-40" style="color: #333;">
+        <p style="font-size: 16px;">Un nouveau lien de confirmation a été envoyé à votre adresse email.</p>
+        <p style="font-size: 16px;">Veuillez vérifier votre boîte mail.</p>
+    </div>
+
+    <div class="text-center p-t-20">
+        <a class="txt2" href="{% url 'login' %}">
+            Retour à la page de connexion
+            <i class="fa fa-long-arrow-right m-l-5" aria-hidden="true"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}

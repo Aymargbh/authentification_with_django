@@ -1,15 +1,16 @@
 from django.urls import path
 from .views import *
 from django.contrib.auth import views as auth_views
-from .views import CustomPasswordResetConfirmView, ConfirmEmailView, ConfirmationSentView
+from .views import *
 
 urlpatterns = [
     path('signup/', SignUpView.as_view(), name='signup'),
-    path('accounts/confirmation-sent/',
+    path('confirmation-sent/',
          ConfirmationSentView.as_view(), 
          name='confirmation_sent'),
     path('confirm-email/<str:token>/', ConfirmEmailView.as_view(), name='confirm_email'),
     path('resend-confirmation/', ResendConfirmationEmailView.as_view(), name='resend_confirmation'),
+    path('reactivate-account/<str:token>/', ReactivateAccountView.as_view(), name='reactivate_account'),
     path('login/', CustomLoginView.as_view(), name='login'),
     path('logout/', CustomLogoutView.as_view(), name='logout'),
     path('password_change/', PasswordChangeView.as_view(), name='password_change'),

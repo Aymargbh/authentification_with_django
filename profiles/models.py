@@ -7,6 +7,9 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
+import secrets
 
 class CustomUser(AbstractUser):
     phone = models.CharField(max_length=20, blank=True)
@@ -18,18 +21,25 @@ class CustomUser(AbstractUser):
         default='profile_pics/default.png',  # Image par défaut (optionnel)
     )
     email_confirmed = models.BooleanField(default=False)
-    confirmation_token = models.CharField(max_length=64, blank=True)
+    confirmation_token = models.CharField(max_length=64, blank=True, null=True, unique=True)
+    confirmation_token_created_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
 
-    def __str__(self):
-        return f"{self.email} ({self.first_name})"
-    
-    def send_confirmation_email(self, request):
-        self.confirmation_token = get_random_string(64)
+    def is_confirmation_token_expired(self):
+        if not self.confirmation_token_created_at:
+            return True
+        return timezone.now() > self.confirmation_token_created_at + timedelta(days=2)
+
+    def generate_new_confirmation_token(self):
+        self.confirmation_token = secrets.token_urlsafe(32)
+        self.confirmation_token_created_at = timezone.now()
         self.save()
-        
-        # Utilisez request.build_absolute_uri pour générer l'URL complète
+        return self.confirmation_token
+
+    def send_confirmation_email(self, request):
+        token = self.generate_new_confirmation_token()
         confirmation_url = request.build_absolute_uri(
-            f'/accounts/confirm-email/{self.confirmation_token}/'
+            f'/accounts/confirm-email/{token}/'
         )
         
         subject = "Confirmation de votre compte"
