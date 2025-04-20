@@ -136,3 +136,48 @@ def password_reset_done(request):
 
 def password_reset_complete(request):
     return render(request, 'accounts/registration/password_reset_complete.html')
+
+class CustomPasswordResetConfirmView(FormView):
+    template_name = 'accounts/registration/password_reset_confirm.html'
+    form_class = CustomSetPasswordForm
+    success_url = reverse_lazy('password_reset_complete')
+
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Vérifie le token et stocke l'utilisateur avant toute autre méthode
+        """
+        # Décode l'UID
+        try:
+            uid = urlsafe_base64_decode(kwargs['uidb64']).decode()
+            self.user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            self.user = None
+
+        # Vérifie le token
+        if not self.is_valid_token(kwargs['token']):
+            return render(request, 'accounts/registration/password_reset_invalid.html')
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def is_valid_token(self, token):
+        """
+        Vérifie que l'utilisateur existe et que le token est valide
+        """
+        return (self.user is not None and 
+                self.user.is_active and
+                default_token_generator.check_token(self.user, token))
+
+    def get_form_kwargs(self):
+        """
+        Injecte l'utilisateur dans le formulaire
+        """
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.user  # self.user est maintenant toujours défini
+        return kwargs
+
+    def form_valid(self, form):
+        """
+        Traitement après validation réussie
+        """
+        form.save()
+        return super().form_valid(form)

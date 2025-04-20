@@ -106,25 +106,19 @@ class CustomPasswordResetForm(PasswordResetForm):
         'inactive': "Ce compte est désactivé.",
     }
 
+
 class CustomSetPasswordForm(SetPasswordForm):
     new_password1 = forms.CharField(
         label="Nouveau mot de passe",
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
-    new_password2 = forms.CharField(
-        label="Confirmation",
-        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}))
-    
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['new_password1'].widget.attrs.update({
-            'class': 'input100',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
             'placeholder': 'Nouveau mot de passe'
         })
-        self.fields['new_password2'].widget.attrs.update({
-            'class': 'input100',
-            'placeholder': 'Confirmation'
+    )
+    new_password2 = forms.CharField(
+        label="Confirmation",
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Confirmez le mot de passe'
         })
-    
-    error_messages = {
-        'password_mismatch': "Les deux mots de passe ne correspondent pas.",
-    }
+    )
