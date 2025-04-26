@@ -17,9 +17,6 @@ import secrets
 
 User = get_user_model()
 
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-
 # Décorateur personnalisé pour vérifier la confirmation email
 def email_confirmation_required(view_func):
     def wrapper(request, *args, **kwargs):
@@ -212,21 +209,9 @@ class ResendConfirmationEmailView(View):
         email = request.POST.get('email')
         try:
             user = CustomUser.objects.get(email=email, email_confirmed=False)
-            token = secrets.token_urlsafe(32)
-            user.confirmation_token = token
-            user.save()
             
-            # Envoyer l'email
-            confirmation_link = request.build_absolute_uri(
-                f'/accounts/confirm-email/{token}/'
-            )
-            send_mail(
-                'Confirmation de votre email',
-                f'Cliquez sur ce lien pour confirmer votre email: {confirmation_link}',
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
-            )
+            # Ici tu appelles ta fonction dans le modèle !
+            user.send_confirmation_email(request)
             
             messages.success(request, "Un nouveau lien de confirmation a été envoyé à votre adresse email.")
             return redirect('resend_confirmation')
@@ -234,21 +219,14 @@ class ResendConfirmationEmailView(View):
         except CustomUser.DoesNotExist:
             messages.error(request, "Aucun compte non confirmé trouvé avec cette adresse email.")
             return redirect('resend_confirmation')
+
         
 from django.views import View
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
-from datetime import timedelta
 from .models import CustomUser
 from .utils import generate_confirmation_token, send_confirmation_email
-from django.views import View
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-
-from django.utils import timezone
 
 class ConfirmEmailView(View):
     def get(self, request, token):

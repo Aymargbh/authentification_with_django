@@ -1,8 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.models import AbstractUser
-from django.db import models
-from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -25,17 +22,18 @@ class CustomUser(AbstractUser):
     confirmation_token_created_at = models.DateTimeField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
 
-    def is_confirmation_token_expired(self):
-        if not self.confirmation_token_created_at:
-            return True
-        return timezone.now() > self.confirmation_token_created_at + timedelta(days=2)
-
     def generate_new_confirmation_token(self):
         self.confirmation_token = secrets.token_urlsafe(32)
         self.confirmation_token_created_at = timezone.now()
         self.save()
         return self.confirmation_token
 
+    def is_confirmation_token_expired(self):
+        if not self.confirmation_token_created_at:
+            return True
+        expire_days = getattr(settings, 'ACCOUNT_CONFIRMATION_EXPIRE_DAYS', 2)
+        return timezone.now() > self.confirmation_token_created_at + timedelta(days=expire_days)
+    
     def send_confirmation_email(self, request):
         token = self.generate_new_confirmation_token()
         confirmation_url = request.build_absolute_uri(
